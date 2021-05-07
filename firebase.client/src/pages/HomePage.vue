@@ -1,15 +1,54 @@
 <template>
-  <div class="home flex-grow-1 d-flex flex-column align-items-center justify-content-center">
-    <img src="https://bcw.blob.core.windows.net/public/img/8600856373152463" alt="CodeWorks Logo">
-    <h1 class="my-5 bg-dark text-light p-3 rounded d-flex align-items-center">
-      <span class="mx-2 text-white">Vue 3 Starter</span>
-    </h1>
+  <div class="container-fluid">
+    <div class="row">
+      <form @submit.prevent="createPost">
+        <div class="col">
+          <div class="form-group">
+            <input type="text"
+                   class="form-control"
+                   name=""
+                   id=""
+                   aria-describedby="helpId"
+                   placeholder="new post..."
+                   v-model="state.newPost.body"
+            >
+          </div>
+        </div>
+        <div class="col">
+          <div class="form-group">
+            <input type="text"
+                   class="form-control"
+                   name=""
+                   id=""
+                   aria-describedby="helpId"
+                   placeholder="image..."
+                   v-model="state.newPost.imgUrl"
+            >
+          </div>
+        </div>
+        <div class="col">
+          <button type="submit" class="btn btn-success">
+            creeate yay
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </template>
 
 <script>
+import { reactive } from 'vue'
 export default {
-  name: 'Home'
+  name: 'Home',
+  setup() {
+    const state = reactive({
+      newPost: {}
+    })
+    return {
+      state
+      // TODO create post function
+    }
+  }
 }
 </script>
 
