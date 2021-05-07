@@ -33,19 +33,41 @@
         </div>
       </form>
     </div>
+    <div class="card-columns">
+      <PostComponent v-for="post in state.posts" :key="post.id" :post-prop="post" />
+    </div>
   </div>
 </template>
 
 <script>
-import { reactive } from 'vue'
+import { computed, onMounted, reactive } from 'vue'
+import { postsService } from '../services/PostsService'
+import { logger } from '../utils/Logger'
+import { AppState } from '../AppState'
 export default {
   name: 'Home',
   setup() {
     const state = reactive({
-      newPost: {}
+      newPost: {},
+      posts: computed(() => AppState.posts)
+    })
+    onMounted(async() => {
+      try {
+        await postsService.getAll()
+      } catch (error) {
+        logger.log(error)
+      }
     })
     return {
-      state
+      state,
+      async createPost() {
+        try {
+          await postsService.create(state.newPost)
+          state.newPost = {}
+        } catch (error) {
+          logger.error(error)
+        }
+      }
       // TODO create post function
     }
   }
