@@ -33,7 +33,7 @@
         </div>
       </form>
     </div>
-    <div class="card-columns">
+    <div class="card-columns mt-5">
       <PostComponent v-for="post in state.posts" :key="post.id" :post-prop="post" />
     </div>
   </div>
