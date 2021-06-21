@@ -36,6 +36,7 @@ export default {
   font-size: 1.8rem;
   text-align: center;
   line-height: 2em;
+  font-family: 'Permanent Marker', cursive;
 }
 .item {
   width: 30%;
