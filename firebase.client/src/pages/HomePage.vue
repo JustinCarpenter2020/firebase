@@ -7,27 +7,38 @@
             <input type="text"
                    class="form-control"
                    name=""
-                   id=""
+                   id="title"
                    aria-describedby="helpId"
                    placeholder="new post..."
                    v-model="state.newPost.body"
             >
+            <button v-if="state.uploadReady" type="submit" class="btn btn-success">
+              Create post
+            </button>
+            <button v-if="state.selected" class="btn btn-danger" type="button" @click="upload">
+              Upload
+            </button>
           </div>
         </div>
         <div class="col">
           <div class="form-group">
-            <input type="file" ref="fileInput" @click="onFileOpen" accept="image/*" @change="filePicked">
+            <input type="file" ref="fileInput" accept="image/*" @change="filePicked">
           </div>
         </div>
         <div class="col">
           <div v-if="state.image">
             <img :src="state.imageUrl" alt="">
           </div>
-          <button type="submit" class="btn btn-success">
-            creeate yay
-          </button>
+          <div v-else>
+            <img id="img" alt="">
+          </div>
         </div>
       </form>
+    </div>
+    <div class="row text-center mt-5">
+      <div class="col">
+        <img class="camera" src="https://pisces.bbystatic.com/image2/BestBuy_US/images/products/6317/6317527_sd.jpg" alt="">
+      </div>
     </div>
     <div class="wrapper mt-5">
       <PostComponent v-for="post in state.posts" :key="post.id" :post-prop="post" />
@@ -40,13 +51,15 @@ import { computed, onMounted, reactive } from 'vue'
 import { postsService } from '../services/PostsService'
 import { logger } from '../utils/Logger'
 import { AppState } from '../AppState'
+import { fireBaseLogic } from '../services/FireBaseLogic'
 export default {
   name: 'Home',
   setup() {
     const state = reactive({
       newPost: {},
-      imageUrl: '',
-      image: null,
+      selected: false,
+      uploadReady: false,
+      files: [],
       posts: computed(() => AppState.posts)
     })
     onMounted(async() => {
@@ -60,31 +73,33 @@ export default {
       state,
       async createPost() {
         try {
-          if (!state.image) {
-            return 'no image selected'
-          }
-          state.newPost.imageUrl = state.image
           await postsService.create(state.newPost)
           state.newPost = {}
+          document.getElementById('img').src = ''
+          state.uploadReady = false
         } catch (error) {
           logger.error(error)
         }
       },
-      onFileOpen() {
-        this.$refs.fileInput.click()
-      },
-      filePicked(event) {
-        const files = event.target.files
-        const fileName = files[0].name
-        if (fileName.lastIndexOf('.') <= 0) {
-          return 'Pleaseprovide a valid file'
+      filePicked(e) {
+        state.files = e.target.files
+        // console.log(files)
+        // NOTE establish a reader to read the file that we pulled, it waits for the reader to load and then grabs the id and replaces it with our img
+        const reader = new FileReader()
+        reader.onload = function() {
+          document.getElementById('img').src = reader.result
         }
-        const fileReader = new FileReader()
-        fileReader.addEventListener('load', () => {
-          state.imageUrl = fileReader.result
-        })
-        fileReader.readAsDataURL(files[0])
-        state.image = files[0]
+        // NOTE this method is very particular it must be readAsDataURL
+        reader.readAsDataURL(state.files[0])
+        state.selected = true
+      },
+      async upload() {
+        const imgName = state.newPost.body
+        const res = await fireBaseLogic.upload(imgName, state.files[0])
+        state.newPost.imgUrl = res.url
+        logger.log(state.newPost)
+        state.selected = false
+        state.uploadReady = true
       }
     }
   }
@@ -105,5 +120,8 @@ export default {
   width: 100%;
   padding: 0 2rem;
   text-align: center;
+}
+.camera{
+  height: 30vh;
 }
 </style>
