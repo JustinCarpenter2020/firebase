@@ -30,14 +30,25 @@
             <img :src="state.imageUrl" alt="">
           </div>
           <div v-else>
-            <img id="img" alt="">
+            <img id="img" class="selected" alt="">
           </div>
         </div>
       </form>
     </div>
     <div class="row text-center mt-5">
-      <div class="col">
+      <div class=" col animate__animated animate__bounce">
         <img class="camera" src="https://pisces.bbystatic.com/image2/BestBuy_US/images/products/6317/6317527_sd.jpg" alt="">
+      </div>
+    </div>
+    <div class="row justify-content-center mt-1" v-if="state.printing">
+      <div class="col-3 animate__animated animate__slideInDown">
+        <div>
+          <div class="card shadow ">
+            <div class="card-body">
+              <img id="printing" :src="state.printImg" class="print img-fluid" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="wrapper mt-5">
@@ -59,6 +70,8 @@ export default {
       newPost: {},
       selected: false,
       uploadReady: false,
+      printing: false,
+      printImg: '',
       files: [],
       posts: computed(() => AppState.posts)
     })
@@ -74,6 +87,8 @@ export default {
       async createPost() {
         try {
           await postsService.create(state.newPost)
+          state.printImg = state.newPost.imgUrl
+          this.print()
           state.newPost = {}
           document.getElementById('img').src = ''
           state.uploadReady = false
@@ -100,6 +115,12 @@ export default {
         logger.log(state.newPost)
         state.selected = false
         state.uploadReady = true
+      },
+      print() {
+        state.printing = true
+        setTimeout(function() {
+          state.printing = false
+        }, 2000)
       }
     }
   }
@@ -107,14 +128,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.home{
-  text-align: center;
-  user-select: none;
-  > img{
-    height: 200px;
-    width: 200px;
-  }
-}
 
 .wrapper {
   width: 100%;
@@ -122,6 +135,15 @@ export default {
   text-align: center;
 }
 .camera{
+  height: 30vh;
+}
+
+.selected{
+  height: 20vh;
+  width: 30vh;
+}
+
+.print{
   height: 30vh;
 }
 </style>

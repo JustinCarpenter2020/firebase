@@ -1,13 +1,4 @@
 <template>
-  <!-- <div class="card shadow" v-if="postProp.creator">
-    <img class="card-img-top img-fluid" :src="postProp.imgUrl" alt="">
-    <div class="card-body">
-      <p class="card-text">
-        {{ postProp.body }} || {{ postProp.creator.name }}
-      </p>
-    </div>
-  </div> -->
-
   <div class="item">
     <div class="polaroid">
       <img :src="postProp.imgUrl">
