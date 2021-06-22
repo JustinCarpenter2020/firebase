@@ -96,18 +96,24 @@ export default {
           logger.error(error)
         }
       },
+
+      // <----------------------File Selection proccess----------------------------------------------------->
       filePicked(e) {
         state.files = e.target.files
-        // console.log(files)
+
         // NOTE establish a reader to read the file that we pulled, it waits for the reader to load and then grabs the id and replaces it with our img
         const reader = new FileReader()
+
         reader.onload = function() {
           document.getElementById('img').src = reader.result
         }
-        // NOTE this method is very particular it must be readAsDataURL
+
+        // NOTE this method is very particular it must be readAsDataURL, it's also a built in js method with readers, it allows us to return the contents of a file as a base64 encoded string
         reader.readAsDataURL(state.files[0])
         state.selected = true
       },
+
+      // <----------------------upload proccess----------------------------------------------------->
       async upload() {
         const imgName = state.newPost.body
         const res = await fireBaseLogic.upload(imgName, state.files[0])
@@ -116,6 +122,8 @@ export default {
         state.selected = false
         state.uploadReady = true
       },
+
+      // <----------------------extra css----------------------------------------------------->
       print() {
         state.printing = true
         setTimeout(function() {
