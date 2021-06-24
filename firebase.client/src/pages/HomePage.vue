@@ -118,7 +118,7 @@ export default {
         const imgName = state.newPost.body
         const res = await fireBaseLogic.upload(imgName, state.files[0])
         state.newPost.imgUrl = res.url
-        logger.log(state.newPost)
+
         state.selected = false
         state.uploadReady = true
       },
