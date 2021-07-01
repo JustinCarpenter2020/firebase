@@ -1,4 +1,4 @@
-import { storage } from '../firebaseconfig'
+import { storage } from '../env'
 import { logger } from '../utils/Logger'
 class FireBaseLogic {
   async upload(imgName, data) {
