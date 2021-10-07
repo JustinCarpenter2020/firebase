@@ -10,12 +10,12 @@
                    id="title"
                    aria-describedby="helpId"
                    placeholder="new post..."
-                   v-model="state.newPost.body"
+                   v-model="editable.body"
             >
-            <button v-if="state.uploadReady" type="submit" class="btn btn-success">
+            <button v-if="uploadReady" type="submit" class="btn btn-success">
               Create post
             </button>
-            <button v-if="state.selected" class="btn btn-danger" type="button" @click="upload('img')">
+            <button v-if="selected" class="btn btn-danger" type="button" @click="upload('img')">
               Upload
             </button>
           </div>
@@ -26,8 +26,8 @@
           </div>
         </div>
         <div class="col">
-          <div v-if="state.image">
-            <img :src="state.imageUrl" alt="">
+          <div v-if="image">
+            <img :src="imageUrl" alt="">
           </div>
           <div v-else>
             <img id="img" class="selected" alt="">
@@ -36,7 +36,7 @@
         <div class="col mt-4">
           <div class="form-group">
             <input type="file" ref="fileInput" accept="video/*" @change="filePicked">
-            <button v-if="state.selected" class="btn btn-danger" type="button" @click="upload('video')">
+            <button v-if="selected" class="btn btn-danger" type="button" @click="upload('video')">
               Upload video
             </button>
           </div>
@@ -48,25 +48,25 @@
         <img class="camera" src="https://pisces.bbystatic.com/image2/BestBuy_US/images/products/6317/6317527_sd.jpg" alt="">
       </div>
     </div>
-    <div class="row justify-content-center mt-1" v-if="state.printing">
+    <div class="row justify-content-center mt-1" v-if="printing">
       <div class="col-3 animate__animated animate__slideInDown">
         <div>
           <div class="card shadow ">
             <div class="card-body">
-              <img id="printing" :src="state.printImg" class="print img-fluid" />
+              <img id="printing" :src="printImg" class="print img-fluid" />
             </div>
           </div>
         </div>
       </div>
     </div>
     <div class="wrapper mt-5">
-      <PostComponent v-for="post in state.posts" :key="post.id" :post-prop="post" />
+      <PostComponent v-for="post in posts" :key="post.id" :post-prop="post" />
     </div>
   </div>
 </template>
 
 <script>
-import { computed, onMounted, reactive } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { postsService } from '../services/PostsService'
 import { logger } from '../utils/Logger'
 import { AppState } from '../AppState'
@@ -74,15 +74,12 @@ import { fireBaseLogic } from '../services/FireBaseLogic'
 export default {
   name: 'Home',
   setup() {
-    const state = reactive({
-      newPost: {},
-      selected: false,
-      uploadReady: false,
-      printing: false,
-      printImg: '',
-      files: [],
-      posts: computed(() => AppState.posts)
-    })
+    const editable = ref({})
+    const selected = ref(false)
+    const uploadReady = ref(false)
+    const printing = ref(false)
+    const files = ref([])
+    const printImg = ref('')
     onMounted(async() => {
       try {
         await postsService.getAll()
@@ -91,15 +88,21 @@ export default {
       }
     })
     return {
-      state,
+      files,
+      printImg,
+      editable,
+      uploadReady,
+      printing,
+      selected,
+      posts: computed(() => AppState.posts),
       async createPost() {
         try {
-          await postsService.create(state.newPost)
-          state.printImg = state.newPost.imgUrl
+          await postsService.create(editable.value)
+          printImg.value = editable.value.imgUrl
           this.print()
-          state.newPost = {}
+          editable.value = {}
           document.getElementById('img').src = ''
-          state.uploadReady = false
+          uploadReady.value = false
         } catch (error) {
           logger.error(error)
         }
@@ -107,34 +110,35 @@ export default {
 
       // <----------------------File Selection proccess------------------------------->
       filePicked(e) {
-        state.files = e.target.files
+        files.value = e.target.files
+        logger.log(files)
         // NOTE establish a reader to read the file that we pulled, it waits for the reader to load and then grabs the id and replaces it with our img
         const reader = new FileReader()
 
-        reader.readAsDataURL(state.files[0])
+        reader.readAsDataURL(files.value[0])
 
         reader.onload = function() {
           document.getElementById('img').src = reader.result
         }
         // NOTE this method is very particular it must be readAsDataURL, it's also a built in js method with readers, it allows us to return the contents of a file as a base64 encoded string
-        state.selected = true
+        selected.value = true
       },
 
       // <----------------------upload proccess----------------------------------------------------->
       async upload(type) {
-        const typeName = state.newPost.body
-        const url = await fireBaseLogic.upload(typeName, state.files[0], type)
-        type === 'img' ? state.newPost.imgUrl = url : state.newPost.videoUrl = url
+        const typeName = editable.value.body
+        const url = await fireBaseLogic.upload(typeName, files.value[0], type)
+        type === 'img' ? editable.value.imgUrl = url : editable.value.videoUrl = url
 
-        state.selected = false
-        state.uploadReady = true
+        selected.value = false
+        uploadReady.value = true
       },
 
       // <----------------------extra css----------------------------------------------------->
       print() {
-        state.printing = true
+        printing.value = true
         setTimeout(function() {
-          state.printing = false
+          printing.value = false
         }, 2000)
       }
     }
