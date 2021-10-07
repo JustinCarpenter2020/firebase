@@ -15,7 +15,7 @@
             <button v-if="state.uploadReady" type="submit" class="btn btn-success">
               Create post
             </button>
-            <button v-if="state.selected" class="btn btn-danger" type="button" @click="upload">
+            <button v-if="state.selected" class="btn btn-danger" type="button" @click="upload('img')">
               Upload
             </button>
           </div>
@@ -31,6 +31,14 @@
           </div>
           <div v-else>
             <img id="img" class="selected" alt="">
+          </div>
+        </div>
+        <div class="col mt-4">
+          <div class="form-group">
+            <input type="file" ref="fileInput" accept="video/*" @change="filePicked">
+            <button v-if="state.selected" class="btn btn-danger" type="button" @click="upload('video')">
+              Upload video
+            </button>
           </div>
         </div>
       </form>
@@ -97,27 +105,26 @@ export default {
         }
       },
 
-      // <----------------------File Selection proccess----------------------------------------------------->
+      // <----------------------File Selection proccess------------------------------->
       filePicked(e) {
         state.files = e.target.files
-
         // NOTE establish a reader to read the file that we pulled, it waits for the reader to load and then grabs the id and replaces it with our img
         const reader = new FileReader()
+
+        reader.readAsDataURL(state.files[0])
 
         reader.onload = function() {
           document.getElementById('img').src = reader.result
         }
-
         // NOTE this method is very particular it must be readAsDataURL, it's also a built in js method with readers, it allows us to return the contents of a file as a base64 encoded string
-        reader.readAsDataURL(state.files[0])
         state.selected = true
       },
 
       // <----------------------upload proccess----------------------------------------------------->
-      async upload() {
-        const imgName = state.newPost.body
-        const res = await fireBaseLogic.upload(imgName, state.files[0])
-        state.newPost.imgUrl = res.url
+      async upload(type) {
+        const typeName = state.newPost.body
+        const url = await fireBaseLogic.upload(typeName, state.files[0], type)
+        type === 'img' ? state.newPost.imgUrl = url : state.newPost.videoUrl = url
 
         state.selected = false
         state.uploadReady = true

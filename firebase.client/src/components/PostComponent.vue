@@ -1,7 +1,12 @@
 <template>
   <div class="item">
     <div class="polaroid">
-      <img :src="postProp.imgUrl">
+      <img :src="postProp.imgUrl" v-if="postProp.imgUrl">
+      <video width="320" height="240" controls v-else>
+        <source :src="postProp.videoUrl" type="video/mp4">
+        <source src="movie.ogg" type="video/ogg">
+        Your browser does not support the video tag.
+      </video>
       <div class="caption">
         {{ postProp.body }}
       </div>

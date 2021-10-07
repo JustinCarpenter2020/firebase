@@ -5,7 +5,8 @@ const Post = new Schema(
   {
     body: { type: String, required: true },
     imgUrl: { type: String },
-    creatorId: { type: String, ref: 'Account', required: true }
+    videoUrl: { type: String },
+    creatorId: { type: Schema.Types.ObjectId, ref: 'Account', required: true }
   },
   { timestamps: true, toJSON: { virtuals: true } }
 )
